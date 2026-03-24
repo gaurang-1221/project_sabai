@@ -2,7 +2,7 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
-import connectDB from "./Db.js";
+import connectDB from "./db.js";
 
 const seed = async () => {
   await connectDB();

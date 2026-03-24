@@ -12,7 +12,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <Link
-      to={`/products/${product._id}`}
+      to={`/product/${product._id}`}
       className="group bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col"
     >
       {/* Image */}

@@ -56,7 +56,7 @@ const Cart = () => {
                 className="bg-white border border-gray-100 rounded-2xl p-4 flex gap-4 shadow-sm"
               >
                 {/* Image */}
-                <Link to={`/products/${item._id}`} className="shrink-0">
+                <Link to={`/product/${item._id}`} className="shrink-0">
                   <img
                     src={item.images?.[0] || "/placeholder.jpg"}
                     alt={item.name}
@@ -68,7 +68,7 @@ const Cart = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start gap-2">
                     <Link
-                      to={`/products/${item._id}`}
+                      to={`/product/${item._id}`}
                       className="text-sm font-semibold text-gray-900 hover:text-indigo-600 transition-colors line-clamp-2 leading-snug"
                     >
                       {item.name}
