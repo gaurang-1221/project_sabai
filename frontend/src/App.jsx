@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import OrderTracking from "./pages/OrderTracking";
+import Offers from "./pages/Offers";
 import "./App.css";
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -90,6 +91,7 @@ function App() {
                         <Route path="/cart" element={<Cart />} />
                         <Route path="/checkout" element={<Checkout />} />
                         <Route path="/contact" element={<Contact />} />
+                        <Route path="/offers" element={<Offers />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/track" element={<OrderTracking />} />
                       </Routes>
