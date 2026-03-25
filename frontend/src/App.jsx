@@ -14,6 +14,8 @@ import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import OrderTracking from "./pages/OrderTracking";
 import Offers from "./pages/Offers";
+import Categories from "./pages/Categories";
+import CategoryDetail from "./pages/CategoryDetail";
 import "./App.css";
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -91,6 +93,8 @@ function App() {
                         <Route path="/cart" element={<Cart />} />
                         <Route path="/checkout" element={<Checkout />} />
                         <Route path="/contact" element={<Contact />} />
+                        <Route path="/categories" element={<Categories />} />
+                        <Route path="/category/:categoryName" element={<CategoryDetail />} />
                         <Route path="/offers" element={<Offers />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/track" element={<OrderTracking />} />

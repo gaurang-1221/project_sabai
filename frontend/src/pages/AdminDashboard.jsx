@@ -474,14 +474,25 @@ const AdminDashboard = () => {
                 </div>
                 <div className="col-span-2 space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Category</label>
-                  <input
-                    required
-                    type="text"
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
-                    placeholder="e.g. Accessories"
-                  />
+                  <div className="relative group">
+                    <input
+                      required
+                      list="category-suggestions"
+                      type="text"
+                      value={form.category}
+                      onChange={(e) => setForm({ ...form, category: e.target.value })}
+                      className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                      placeholder="e.g. Accessories"
+                    />
+                    <datalist id="category-suggestions">
+                      {[...new Set(products.map(p => p.category))].map((cat, i) => (
+                        <option key={i} value={cat} />
+                      ))}
+                    </datalist>
+                  </div>
+                  <p className="text-[10px] text-gray-400 font-medium italic ml-1">
+                    * Type a new category name or select from the suggestions above.
+                  </p>
                 </div>
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Product Images</label>

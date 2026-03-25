@@ -56,6 +56,14 @@ const Navbar = () => {
               Products
             </Link>
             <Link 
+              to="/categories" 
+              className={`text-sm font-semibold transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-indigo-600 after:scale-x-0 after:transition-transform hover:after:scale-x-100 ${
+                isActive("/categories") ? "text-indigo-600 after:scale-x-100" : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Collections
+            </Link>
+            <Link 
               to="/track" 
               className={`text-sm font-semibold transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-indigo-600 after:scale-x-0 after:transition-transform hover:after:scale-x-100 ${
                 isActive("/track") ? "text-indigo-600 after:scale-x-100" : "text-gray-600 hover:text-gray-900"
@@ -137,6 +145,15 @@ const Navbar = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Products
+              </Link>
+              <Link 
+                to="/categories" 
+                className={`px-4 py-3 rounded-xl text-sm font-bold ${
+                  isActive("/categories") ? "bg-indigo-50 text-indigo-600" : "text-gray-600 hover:bg-gray-50"
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Collections
               </Link>
               <Link 
                 to="/track" 
