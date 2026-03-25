@@ -102,6 +102,42 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleClearHistory = async () => {
+    const count = orders.filter(o => o.status === 'complete').length;
+    if (count === 0) {
+      alert("No completed orders to clear.");
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to permanently delete all ${count} completed orders? This cannot be undone.`)) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API}/orders/history`, config);
+      setOrders(orders.filter(o => o.status !== 'complete'));
+      alert("Order history cleared successfully!");
+    } catch (err) {
+      console.error("Clear history error:", err);
+      alert("Failed to clear history.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteOrder = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this order record? This cannot be undone.")) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API}/orders/${id}`, config);
+      setOrders(orders.filter((o) => o._id !== id));
+    } catch (err) {
+      alert("Failed to delete order");
+    }
+  };
+
   const handleDeleteProduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
@@ -280,13 +316,23 @@ const AdminDashboard = () => {
               <button
                 onClick={() => {
                   setEditingProduct(null);
-                  setForm({ name: "", description: "", price: "", category: "", stock: "" });
+                  setForm({ name: "", description: "", price: "", category: "", stock: "", images: [], imageFiles: [] });
                   setShowModal(true);
                 }}
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black px-6 py-3 rounded-2xl transition-all shadow-xl shadow-indigo-100 hover:shadow-indigo-200 active:scale-[0.98]"
               >
                 <Plus size={20} />
                 New Product
+              </button>
+            )}
+
+            {activeTab === "history" && (
+              <button
+                onClick={handleClearHistory}
+                className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-black px-6 py-3 rounded-2xl transition-all shadow-xl shadow-rose-100 hover:shadow-rose-200 active:scale-[0.98]"
+              >
+                <Trash2 size={20} />
+                Clear All History
               </button>
             )}
           </div>
@@ -425,6 +471,15 @@ const AdminDashboard = () => {
                               >
                                 <Eye size={18} />
                               </button>
+                              {activeTab === 'history' && (
+                                <button
+                                  onClick={() => handleDeleteOrder(o._id)}
+                                  className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                                  title="Delete Order"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>

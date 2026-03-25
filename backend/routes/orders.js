@@ -91,4 +91,25 @@ router.put("/:id/status", protect, async (req, res) => {
   }
 });
 
+// DELETE /api/orders/history — clear all completed orders (admin only)
+router.delete("/history", protect, async (req, res) => {
+  try {
+    const result = await Order.deleteMany({ status: "complete" });
+    res.json({ message: "History cleared successfully", deletedCount: result.deletedCount });
+  } catch (err) {
+    res.status(500).json({ message: "Error clearing order history" });
+  }
+});
+
+// DELETE /api/orders/:id — delete a single order (admin only)
+router.delete("/:id", protect, async (req, res) => {
+  try {
+    const order = await Order.findByIdAndDelete(req.params.id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    res.json({ message: "Order deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting order" });
+  }
+});
+
 export default router;
