@@ -17,10 +17,19 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Invalid email address" });
     }
 
+    // Use EMAIL_TO or fallback to ADMIN_EMAIL from env
+    const recipient = process.env.EMAIL_TO || process.env.ADMIN_EMAIL || "admin@example.com";
+
+    // If no email credentials, log and return success (to avoid frontend error during dev)
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.EMAIL_USER === 'your-email@gmail.com') {
+      console.warn("Email credentials missing. Skipping email send. Message was:", { name, email, subject, message });
+      return res.json({ message: "Message received (Development Mode: No email sent)" });
+    }
+
     const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
+      host: process.env.EMAIL_HOST || "smtp.gmail.com",
       port: Number(process.env.EMAIL_PORT) || 587,
-      secure: false, // true for port 465, false for 587
+      secure: false, 
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -30,7 +39,7 @@ router.post("/", async (req, res) => {
     await transporter.sendMail({
       from: `"${name}" <${process.env.EMAIL_USER}>`,
       replyTo: email,
-      to: process.env.EMAIL_TO,
+      to: recipient,
       subject: `[Shop Inquiry] ${subject}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
