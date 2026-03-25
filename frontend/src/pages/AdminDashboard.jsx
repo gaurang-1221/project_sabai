@@ -87,7 +87,12 @@ const AdminDashboard = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const config = { 
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        } 
+      };
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("description", form.description);
@@ -113,7 +118,8 @@ const AdminDashboard = () => {
       setForm({ name: "", description: "", price: "", category: "", stock: "" });
       fetchData();
     } catch (err) {
-      alert("Failed to save product");
+      console.error("Save product error details:", err.response?.data || err.message);
+      alert(`Failed to save product: ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
     }

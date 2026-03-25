@@ -68,12 +68,15 @@ const Navbar = () => {
           {/* User Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
             {user && (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full border border-gray-100">
+              <Link 
+                to="/profile"
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-indigo-50 rounded-full border border-gray-100 hover:border-indigo-100 transition-colors cursor-pointer"
+              >
                 <User size={14} className="text-indigo-500" />
                 <span className="text-xs font-bold text-gray-700 truncate max-w-[100px]">
                   {user.fullName || user.email.split("@")[0]}
                 </span>
-              </div>
+              </Link>
             )}
 
             <button
@@ -128,6 +131,17 @@ const Navbar = () => {
               >
                 Contact
               </Link>
+              {user && (
+                <Link 
+                  to="/profile" 
+                  className={`px-4 py-3 rounded-xl text-sm font-bold ${
+                    isActive("/profile") ? "bg-indigo-50 text-indigo-600" : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+              )}
             </div>
           </div>
         )}

@@ -85,8 +85,31 @@ router.get("/me", protect, async (req, res) => {
   res.json({
     id: req.user._id,
     email: req.user.email,
+    fullName: req.user.fullName,
     role: req.user.role,
   });
+});
+
+// PUT /api/auth/profile — update user profile (full name)
+router.put("/profile", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.fullName = req.body.fullName || user.fullName;
+    const updatedUser = await user.save();
+
+    res.json({
+      id: updatedUser._id,
+      email: updatedUser.email,
+      fullName: updatedUser.fullName,
+      role: updatedUser.role,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error updating profile" });
+  }
 });
 
 export default router;
