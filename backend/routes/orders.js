@@ -28,6 +28,25 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET /api/orders/track/:id — track an order by ID (public)
+router.get("/track/:id", async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .select("status customer.fullName createdAt totalAmount items");
+    
+    if (!order) {
+      return res.status(404).json({ message: "Order not found. Please check your ID." });
+    }
+    
+    res.json(order);
+  } catch (err) {
+    if (err.kind === "ObjectId") {
+      return res.status(400).json({ message: "Invalid Order ID format" });
+    }
+    res.status(500).json({ message: "Error tracking order" });
+  }
+});
+
 // ─── Admin Routes (protected) ─────────────────────────────────────────────────
 
 // GET /api/orders — get all orders (newest first)
