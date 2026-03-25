@@ -8,15 +8,22 @@ const seed = async () => {
   await connectDB();
 
   // ── Admin user ──────────────────────────────────────────────────────────────
-  const existing = await User.findOne({ email: process.env.ADMIN_EMAIL });
-  if (existing) {
-    console.log(`ℹ️  Admin already exists: ${process.env.ADMIN_EMAIL}`);
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminEmail || !adminPassword) {
+    console.warn("⚠️  Skipping admin creation: ADMIN_EMAIL or ADMIN_PASSWORD not found in environment variables.");
   } else {
-    await User.create({
-      email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD,
-    });
-    console.log(`✅ Admin created: ${process.env.ADMIN_EMAIL}`);
+    const existing = await User.findOne({ email: adminEmail });
+    if (existing) {
+      console.log(`ℹ️  Admin already exists: ${adminEmail}`);
+    } else {
+      await User.create({
+        email: adminEmail,
+        password: adminPassword,
+      });
+      console.log(`✅ Admin created: ${adminEmail}`);
+    }
   }
 
   // ── Sample products (only if DB is empty) ──────────────────────────────────
