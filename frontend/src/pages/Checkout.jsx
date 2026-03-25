@@ -25,11 +25,15 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [orderId, setOrderId] = useState("");
   const [form, setForm] = useState({
     fullName: "",
     email: "",
     phone: "",
     address: "",
+    city: "",
+    state: "",
+    pincode: "",
   });
 
   const handleSubmit = async (e) => {
@@ -37,20 +41,33 @@ const Checkout = () => {
     setLoading(true);
     try {
       const orderData = {
-        customer: form,
+        customer: {
+          fullName: form.fullName,
+          email: form.email,
+          phone: form.phone,
+        },
+        shippingAddress: {
+          addressLine1: form.address,
+          city: form.city,
+          state: form.state,
+          pincode: form.pincode,
+        },
         items: cart.map((item) => ({
           product: item._id,
+          name: item.name,
           quantity: item.quantity,
           price: item.price,
         })),
         totalAmount: totalPrice,
       };
 
-      await axios.post(`${API}/orders`, orderData);
+      const { data } = await axios.post(`${API}/orders`, orderData);
+      setOrderId(data._id); // Store the real order ID from backend
       setOrderComplete(true);
       clearCart();
     } catch (err) {
-      alert("Failed to place order. Please try again.");
+      console.error("Order error:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Failed to place order. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -65,9 +82,29 @@ const Checkout = () => {
             <CheckCircle size={48} className="text-emerald-500" />
           </div>
           <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">Order Placed!</h2>
-          <p className="text-lg text-gray-500 font-medium mb-10">
+          <p className="text-lg text-gray-500 font-medium mb-6">
             Thank you for your purchase. We've sent a confirmation email to <span className="text-indigo-600 font-bold">{form.email}</span>.
           </p>
+          
+          <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 mb-10 text-left">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Your Tracking ID</p>
+            <div className="flex items-center justify-between gap-4">
+              <code className="text-indigo-600 font-black font-mono break-all">{orderId}</code>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(orderId);
+                  alert("Copied to clipboard!");
+                }}
+                className="text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-700 transition-colors shrink-0"
+              >
+                Copy
+              </button>
+            </div>
+            <p className="text-[10px] font-medium text-gray-400 mt-3 italic">
+              * Use this ID in the "Track Order" page to see your shipment status.
+            </p>
+          </div>
+
           <button
             onClick={() => navigate("/")}
             className="w-full btn-primary py-4 flex items-center justify-center gap-2"
@@ -163,18 +200,51 @@ const Checkout = () => {
                   </div>
                 </div>
                 <div className="space-y-2 text-left md:col-span-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Shipping Address</label>
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Street Address</label>
                   <div className="relative group">
                     <MapPin className="absolute left-4 top-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" size={18} />
                     <textarea
                       required
-                      rows="3"
+                      rows="2"
                       value={form.address}
                       onChange={(e) => setForm({ ...form, address: e.target.value })}
                       className="input-field pl-12 resize-none pt-4"
-                      placeholder="Street address, City, State, ZIP"
+                      placeholder="House No, Building, Area"
                     ></textarea>
                   </div>
+                </div>
+                <div className="space-y-2 text-left">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">City</label>
+                  <input
+                    required
+                    type="text"
+                    value={form.city}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                    className="input-field px-6"
+                    placeholder="e.g. Mumbai"
+                  />
+                </div>
+                <div className="space-y-2 text-left">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">State</label>
+                  <input
+                    required
+                    type="text"
+                    value={form.state}
+                    onChange={(e) => setForm({ ...form, state: e.target.value })}
+                    className="input-field px-6"
+                    placeholder="e.g. Maharashtra"
+                  />
+                </div>
+                <div className="space-y-2 text-left md:col-span-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Pincode</label>
+                  <input
+                    required
+                    type="text"
+                    value={form.pincode}
+                    onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+                    className="input-field px-6"
+                    placeholder="6-digit PIN"
+                  />
                 </div>
               </div>
             </div>
