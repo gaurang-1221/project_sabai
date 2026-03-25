@@ -1,29 +1,34 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { Lock, Mail, Loader2, AlertCircle } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 
-const rawAPI = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const API = rawAPI.endsWith("/") ? rawAPI.slice(0, -1) : rawAPI;
-
-const AdminLogin = () => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
-      const { data } = await axios.post(`${API}/auth/login`, { email, password });
-      localStorage.setItem("adminToken", data.token);
-      navigate("/admin/dashboard");
+      const user = await login(email, password);
+      if (user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid credentials");
+      console.error("Login error:", err);
+      if (!err.response) {
+        setError("Network error. Please check your internet connection and ensure the backend is running.");
+      } else {
+        setError(err.response.data?.message || "Invalid email or password");
+      }
     } finally {
       setLoading(false);
     }
@@ -32,13 +37,10 @@ const AdminLogin = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
-        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50">
+        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl">
           <div className="text-center mb-8">
-            <div className="bg-indigo-50 w-12 h-12 rounded-2xl flex items-center justify-center text-indigo-600 mx-auto mb-4">
-              <Lock size={24} />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-            <p className="text-sm text-gray-500 mt-1">Please enter your credentials</p>
+            <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
+            <p className="text-sm text-gray-500 mt-1">Please login to your account</p>
           </div>
 
           {error && (
@@ -48,7 +50,7 @@ const AdminLogin = () => {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-gray-700 ml-1">Email Address</label>
               <div className="relative">
@@ -59,7 +61,7 @@ const AdminLogin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                  placeholder="admin@example.com"
+                  placeholder="name@example.com"
                 />
               </div>
             </div>
@@ -82,19 +84,22 @@ const AdminLogin = () => {
             <button
               disabled={loading}
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-black disabled:bg-gray-400 text-white font-semibold py-3.5 rounded-2xl transition-all shadow-lg shadow-gray-200 mt-2"
+              className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold py-3.5 rounded-2xl transition-all shadow-lg shadow-indigo-100 mt-2"
             >
-              {loading ? (
-                <Loader2 size={20} className="animate-spin" />
-              ) : (
-                <span>Login as Admin</span>
-              )}
+              {loading ? <Loader2 size={20} className="animate-spin" /> : <span>Login</span>}
             </button>
           </form>
+
+          <p className="text-center text-sm text-gray-500 mt-8">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-indigo-600 font-semibold hover:underline">
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
-export default AdminLogin;
+export default Login;

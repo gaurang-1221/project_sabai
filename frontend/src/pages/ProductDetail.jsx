@@ -5,7 +5,8 @@ import { ShoppingCart, ArrowLeft, CheckCircle, AlertCircle, ChevronLeft, Chevron
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const rawAPI = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API = rawAPI.endsWith("/") ? rawAPI.slice(0, -1) : rawAPI;
 
 const ProductDetail = () => {
   const { id } = useParams();

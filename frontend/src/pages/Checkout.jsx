@@ -4,7 +4,8 @@ import axios from "axios";
 import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const rawAPI = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API = rawAPI.endsWith("/") ? rawAPI.slice(0, -1) : rawAPI;
 
 const initialForm = {
   fullName: "",

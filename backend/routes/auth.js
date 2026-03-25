@@ -11,7 +11,44 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN || "7d",
   });
 
-// POST /api/auth/login — admin login
+// POST /api/auth/signup — user signup
+router.post("/signup", async (req, res) => {
+  try {
+    const { email, password, fullName } = req.body;
+
+    if (!email || !password || !fullName) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const user = await User.create({
+      email,
+      password,
+      fullName,
+      role: "customer",
+    });
+
+    const token = signToken(user._id);
+
+    res.status(201).json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error during signup" });
+  }
+});
+
+// POST /api/auth/login — user login (admin or customer)
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -32,6 +69,7 @@ router.post("/login", async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
+        fullName: user.fullName,
         role: user.role,
       },
     });

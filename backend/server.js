@@ -20,8 +20,25 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // ── Middleware ─────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://project-sabai-wu1m.vercel.app"
+].filter(Boolean).map(o => o.toLowerCase().replace(/\/$/, ""));
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const normalizedOrigin = origin.toLowerCase().replace(/\/$/, "");
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    } else {
+      console.warn(`Blocked by CORS: ${origin}`);
+      const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+      return callback(new Error(msg), false);
+    }
+  },
   credentials: true,
 }));
 

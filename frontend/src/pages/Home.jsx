@@ -5,7 +5,9 @@ import SearchBar from "../components/SearchBar";
 import FilterSidebar from "../components/FilterSidebar";
 import { PackageOpen } from "lucide-react";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const rawAPI = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API = rawAPI.endsWith("/") ? rawAPI.slice(0, -1) : rawAPI;
+console.log("Using API URL (Home):", API);
 
 const Home = () => {
   const [products, setProducts] = useState([]);

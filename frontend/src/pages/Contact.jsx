@@ -2,7 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { Mail, Phone, MapPin, Send, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const rawAPI = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API = rawAPI.endsWith("/") ? rawAPI.slice(0, -1) : rawAPI;
 
 const Contact = () => {
   const [form, setForm] = useState({
