@@ -16,14 +16,16 @@ const seed = async () => {
   } else {
     let user = await User.findOne({ email: adminEmail });
     if (user) {
-      console.log(`ℹ️  Admin already exists: ${adminEmail}. Updating password...`);
+      console.log(`ℹ️  Admin already exists: ${adminEmail}. Updating password and role...`);
       user.password = adminPassword; // Pre-save hook will hash it
+      user.role = "admin";
       await user.save();
-      console.log(`✅ Admin password updated successfully.`);
+      console.log(`✅ Admin updated successfully.`);
     } else {
       await User.create({
         email: adminEmail,
         password: adminPassword,
+        role: "admin",
       });
       console.log(`✅ Admin created: ${adminEmail}`);
     }

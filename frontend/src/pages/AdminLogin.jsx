@@ -6,11 +6,14 @@ import { Lock, Mail, Loader2, AlertCircle } from "lucide-react";
 const rawAPI = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const API = rawAPI.endsWith("/") ? rawAPI.slice(0, -1) : rawAPI;
 
+import { useAuth } from "../context/AuthContext";
+
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -19,9 +22,12 @@ const AdminLogin = () => {
     setError("");
 
     try {
-      const { data } = await axios.post(`${API}/auth/login`, { email, password });
-      localStorage.setItem("adminToken", data.token);
-      navigate("/admin/dashboard");
+      const user = await login(email, password);
+      if (user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        setError("Access denied. Admin credentials required.");
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Invalid credentials");
     } finally {
