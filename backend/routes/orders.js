@@ -55,7 +55,7 @@ router.get("/:id", protect, async (req, res) => {
 router.put("/:id/status", protect, async (req, res) => {
   try {
     const { status } = req.body;
-    const allowed = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
+    const allowed = ["pending", "confirmed", "shipped", "delivered", "cancelled", "complete"];
     if (!allowed.includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }

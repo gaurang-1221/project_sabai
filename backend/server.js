@@ -22,7 +22,9 @@ connectDB();
 // ── Middleware ─────────────────────────────────────────────────────────────────
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  process.env.FRONTEND_URI,
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://localhost:3000",
   "https://project-sabai-wu1m.vercel.app"
 ].filter(Boolean).map(o => o.toLowerCase().replace(/\/$/, ""));

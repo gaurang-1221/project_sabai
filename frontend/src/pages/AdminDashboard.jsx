@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 import {
   Plus,
   Trash2,
@@ -12,13 +13,15 @@ import {
   Loader2,
   AlertCircle,
   Eye,
+  CheckCircle,
+  History,
 } from "lucide-react";
 
 const rawAPI = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const API = rawAPI.endsWith("/") ? rawAPI.slice(0, -1) : rawAPI;
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("products"); // 'products' | 'orders'
+  const [activeTab, setActiveTab] = useState("products"); // 'products' | 'orders' | 'history'
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,15 +38,16 @@ const AdminDashboard = () => {
   });
 
   const navigate = useNavigate();
-  const token = localStorage.getItem("adminToken");
+  const { user, logout } = useAuth();
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!token) {
+    if (!token || (user && user.role !== 'admin')) {
       navigate("/admin/login");
       return;
     }
     fetchData();
-  }, [token, activeTab]);
+  }, [token, activeTab, user]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -53,12 +57,13 @@ const AdminDashboard = () => {
         const { data } = await axios.get(`${API}/products`);
         setProducts(data);
       } else {
+        // Fetch all orders for both 'orders' and 'history' tabs
         const { data } = await axios.get(`${API}/orders`, config);
         setOrders(data);
       }
     } catch (err) {
       if (err.response?.status === 401) {
-        localStorage.removeItem("adminToken");
+        logout();
         navigate("/admin/login");
       }
       setError("Failed to fetch data");
@@ -68,8 +73,20 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
+    logout();
     navigate("/admin/login");
+  };
+
+  const handleCompleteOrder = async (orderId) => {
+    if (!window.confirm("Mark this order as complete? It will be moved to History.")) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.put(`${API}/orders/${orderId}/status`, { status: "complete" }, config);
+      // Optimistically update or just re-fetch
+      setOrders(orders.map(o => o._id === orderId ? { ...o, status: 'complete' } : o));
+    } catch (err) {
+      alert("Failed to update order status");
+    }
   };
 
   const handleDeleteProduct = async (id) => {
@@ -176,6 +193,17 @@ const AdminDashboard = () => {
             <ShoppingBag size={20} />
             Orders
           </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`w-full flex items-center gap-3 px-6 py-4 rounded-[1.25rem] text-sm font-black transition-all duration-300 ${
+              activeTab === "history"
+                ? "bg-indigo-600 text-white shadow-xl shadow-indigo-100 translate-x-1"
+                : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+            }`}
+          >
+            <History size={20} />
+            History
+          </button>
         </nav>
 
         <div className="p-6 border-t border-gray-50">
@@ -254,6 +282,7 @@ const AdminDashboard = () => {
                           <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-widest text-[10px]">Date</th>
                           <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-widest text-[10px]">Total</th>
                           <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-widest text-[10px]">Status</th>
+                          <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-widest text-[10px] text-right">Actions</th>
                         </>
                       ) }
                     </tr>
@@ -307,8 +336,10 @@ const AdminDashboard = () => {
                         </tr>
                       ))
                     ) : (
-                      orders.map((o) => (
-                        <tr key={o._id} className="hover:bg-gray-50/30 transition-colors">
+                      orders
+                        .filter(o => activeTab === 'history' ? o.status === 'complete' : o.status !== 'complete')
+                        .map((o) => (
+                        <tr key={o._id} className="hover:bg-gray-50/30 transition-colors group">
                           <td className="px-8 py-5 font-mono text-xs text-gray-400 font-bold">#{o._id.slice(-8).toUpperCase()}</td>
                           <td className="px-8 py-5">
                             <div className="flex flex-col">
@@ -321,9 +352,32 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-8 py-5 text-gray-900 font-black text-base">₹{o.totalAmount}</td>
                           <td className="px-8 py-5">
-                            <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                              o.status === 'complete' 
+                                ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                                : 'bg-amber-50 text-amber-600 border-amber-100'
+                            }`}>
                               {o.status}
                             </span>
+                          </td>
+                          <td className="px-8 py-5 text-right">
+                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {o.status !== 'complete' && (
+                                <button
+                                  onClick={() => handleCompleteOrder(o._id)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all text-[10px] font-black uppercase tracking-widest"
+                                >
+                                  <CheckCircle size={14} />
+                                  Complete
+                                </button>
+                              )}
+                              <button
+                                className="p-2.5 text-gray-400 hover:bg-gray-50 hover:text-gray-900 rounded-xl transition-all"
+                                title="View Details"
+                              >
+                                <Eye size={18} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
