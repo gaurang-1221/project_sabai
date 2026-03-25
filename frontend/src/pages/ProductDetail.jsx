@@ -30,7 +30,7 @@ const ProductDetail = () => {
       setProduct(data);
       
       const { data: allProducts } = await axios.get(`${API}/products`);
-      setRelated(allProducts.filter(p => p.category === data.category && p._id !== data._id).slice(0, 4));
+      setRelated(allProducts.filter(p => p.category === data.category && p._id !== data._id).slice(0, 8));
     } catch (err) {
       console.error(err);
     } finally {
@@ -67,25 +67,33 @@ const ProductDetail = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24">
         {/* Gallery */}
-        <div className="space-y-6">
-          <div className="aspect-square bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl shadow-indigo-100/50 group">
+        <div className="space-y-6 lg:sticky lg:top-28 h-fit">
+          <div className="aspect-[4/5] bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl shadow-indigo-100/50 group relative">
             <img 
               src={product.images?.[activeImg] || "/placeholder.jpg"} 
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
               alt={product.name}
             />
+            {/* Image Overlay Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
+          
           {product.images?.length > 1 && (
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
               {product.images.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
-                  className={`w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all shrink-0 ${
-                    activeImg === i ? "border-indigo-600 scale-95" : "border-transparent hover:border-gray-200"
+                  className={`w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all shrink-0 snap-start relative group ${
+                    activeImg === i 
+                      ? "border-indigo-600 ring-4 ring-indigo-50 shadow-lg scale-95" 
+                      : "border-gray-100 hover:border-indigo-200 hover:scale-105"
                   }`}
                 >
                   <img src={img} className="w-full h-full object-cover" alt="" />
+                  {activeImg !== i && (
+                    <div className="absolute inset-0 bg-white/40 group-hover:bg-transparent transition-colors" />
+                  )}
                 </button>
               ))}
             </div>
@@ -173,7 +181,7 @@ const ProductDetail = () => {
               <p className="text-gray-500 font-medium text-sm">Similar items from the {product.category} collection</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
             {related.map(p => <ProductCard key={p._id} product={p} />)}
           </div>
         </section>

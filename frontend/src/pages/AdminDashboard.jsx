@@ -34,12 +34,25 @@ const AdminDashboard = () => {
     price: "",
     category: "",
     stock: "",
-    images: [],
+    images: [], // This will hold existing image URLs
+    imageFiles: [], // This will hold new File objects
   });
+  const [previews, setPreviews] = useState([]);
 
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    // Generate previews for new files
+    if (form.imageFiles && form.imageFiles.length > 0) {
+      const newPreviews = Array.from(form.imageFiles).map(file => URL.createObjectURL(file));
+      setPreviews(newPreviews);
+      return () => newPreviews.forEach(url => URL.revokeObjectURL(url));
+    } else {
+      setPreviews([]);
+    }
+  }, [form.imageFiles]);
 
   useEffect(() => {
     if (!token || (user && user.role !== 'admin')) {
@@ -117,8 +130,15 @@ const AdminDashboard = () => {
       formData.append("category", form.category);
       formData.append("stock", form.stock);
 
-      // Handle images (new files only for now)
-      if (form.imageFiles) {
+      // Existing images to keep (if editing)
+      if (editingProduct && form.images) {
+        form.images.forEach((img) => {
+          formData.append("existingImages", img);
+        });
+      }
+
+      // New image files
+      if (form.imageFiles && form.imageFiles.length > 0) {
         Array.from(form.imageFiles).forEach((file) => {
           formData.append("images", file);
         });
@@ -132,7 +152,7 @@ const AdminDashboard = () => {
 
       setShowModal(false);
       setEditingProduct(null);
-      setForm({ name: "", description: "", price: "", category: "", stock: "" });
+      setForm({ name: "", description: "", price: "", category: "", stock: "", images: [], imageFiles: [] });
       fetchData();
     } catch (err) {
       console.error("Save product error details:", err.response?.data || err.message);
@@ -150,6 +170,8 @@ const AdminDashboard = () => {
       price: product.price,
       category: product.category,
       stock: product.stock,
+      images: product.images || [], // Store existing images
+      imageFiles: [], // Clear any pending new files
     });
     setShowModal(true);
   };
@@ -461,17 +483,64 @@ const AdminDashboard = () => {
                     placeholder="e.g. Accessories"
                   />
                 </div>
-                <div className="col-span-2 space-y-2">
+                <div className="col-span-2 space-y-3">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Product Images</label>
-                  <div className="relative group/file">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={(e) => setForm({ ...form, imageFiles: e.target.files })}
-                      className="w-full text-xs text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer"
-                    />
+                  
+                  {/* Image Previews & Existing Images */}
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    {/* Existing Images */}
+                    {form.images?.map((img, idx) => (
+                      <div key={`existing-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50">
+                        <img src={img} className="w-full h-full object-cover" alt="" />
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, images: form.images.filter((_, i) => i !== idx) })}
+                          className="absolute top-1 right-1 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={12} />
+                        </button>
+                        <div className="absolute bottom-0 inset-x-0 bg-black/40 py-0.5 text-[8px] text-white text-center font-black uppercase tracking-tighter">Current</div>
+                      </div>
+                    ))}
+                    
+                    {/* New File Previews */}
+                    {previews.map((url, idx) => (
+                      <div key={`new-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden border border-indigo-100 shadow-sm bg-indigo-50/30">
+                        <img src={url} className="w-full h-full object-cover" alt="" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newFiles = Array.from(form.imageFiles).filter((_, i) => i !== idx);
+                            setForm({ ...form, imageFiles: newFiles });
+                          }}
+                          className="absolute top-1 right-1 p-1.5 bg-indigo-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={12} />
+                        </button>
+                        <div className="absolute bottom-0 inset-x-0 bg-indigo-600/60 py-0.5 text-[8px] text-white text-center font-black uppercase tracking-tighter">New</div>
+                      </div>
+                    ))}
+
+                    {/* Add More Trigger */}
+                    <label className="aspect-square rounded-2xl border-2 border-dashed border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all flex flex-col items-center justify-center gap-1 cursor-pointer text-gray-400 hover:text-indigo-600">
+                      <Plus size={20} />
+                      <span className="text-[8px] font-black uppercase tracking-widest">Add Photo</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          setForm({ ...form, imageFiles: [...(form.imageFiles || []), ...files] });
+                        }}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
+
+                  <p className="text-[10px] text-gray-400 font-medium italic">
+                    * You can upload up to 5 images per product.
+                  </p>
                 </div>
               </div>
               <button
