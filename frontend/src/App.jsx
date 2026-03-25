@@ -81,7 +81,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Navbar />
-                    <main className="flex-grow">
+                    <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                       <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/product/:id" element={<ProductDetail />} />
@@ -90,8 +90,8 @@ function App() {
                         <Route path="/contact" element={<Contact />} />
                       </Routes>
                     </main>
-                    <footer className="bg-white border-t border-gray-100 py-8">
-                      <div className="max-w-6xl mx-auto px-4 text-center">
+                    <footer className="bg-white border-t border-gray-100 py-8 w-full">
+                      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                         <p className="text-sm text-gray-500">
                           &copy; {new Date().getFullYear()} ShopName. All rights reserved.
                         </p>

@@ -32,6 +32,7 @@ const seed = async () => {
   // ── Sample products (only if DB is empty) ──────────────────────────────────
   const count = await Product.countDocuments();
   if (count === 0) {
+    console.log("🌱 Seeding new products...");
     await Product.insertMany([
       {
         name: "Sample Product 1",
@@ -39,7 +40,7 @@ const seed = async () => {
         price: 499,
         category: "general",
         stock: 20,
-        images: [],
+        images: ["https://via.placeholder.com/400x400.png?text=Product+1"],
       },
       {
         name: "Sample Product 2",
@@ -47,12 +48,21 @@ const seed = async () => {
         price: 999,
         category: "general",
         stock: 10,
-        images: [],
+        images: ["https://via.placeholder.com/400x400.png?text=Product+2"],
       },
     ]);
     console.log("✅ Sample products inserted");
   } else {
-    console.log(`ℹ️  Products already exist (${count} found) — skipping sample data`);
+    console.log("ℹ️  Products already exist. Updating images for sample products...");
+    await Product.updateOne(
+      { name: "Sample Product 1" },
+      { $set: { images: ["https://via.placeholder.com/400x400.png?text=Product+1"] } }
+    );
+    await Product.updateOne(
+      { name: "Sample Product 2" },
+      { $set: { images: ["https://via.placeholder.com/400x400.png?text=Product+2"] } }
+    );
+    console.log("✅ Sample product images updated");
   }
 
   await mongoose.disconnect();
