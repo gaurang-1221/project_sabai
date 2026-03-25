@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ShoppingCart, ArrowLeft, CheckCircle, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Star, ShieldCheck, Truck, RotateCcw, Minus, Plus, Loader2 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
 
@@ -12,255 +12,172 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
-
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [activeImage, setActiveImage] = useState(0);
-  const [added, setAdded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [activeImg, setActiveImg] = useState(0);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        setAdded(false);
-        setQuantity(1);
-        setActiveImage(0);
-        const { data } = await axios.get(`${API}/products/${id}`);
-        setProduct(data);
-
-        // Fetch related products (same category, exclude self)
-        const { data: allProducts } = await axios.get(`${API}/products`);
-        const rel = allProducts
-          .filter((p) => p.category === data.category && p._id !== id)
-          .slice(0, 3);
-        setRelated(rel);
-      } catch (err) {
-        setError("Product not found.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProduct();
+    window.scrollTo(0, 0);
   }, [id]);
 
-  const handleAddToCart = () => {
-    addItem(product, quantity);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2500);
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get(`${API}/products/${id}`);
+      setProduct(data);
+      
+      const { data: allProducts } = await axios.get(`${API}/products`);
+      setRelated(allProducts.filter(p => p.category === data.category && p._id !== data._id).slice(0, 4));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const images = product?.images?.length ? product.images : ["/placeholder.jpg"];
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center">
+      <Loader2 className="animate-spin text-indigo-600 mb-4" size={48} />
+      <p className="text-sm font-black text-gray-400 uppercase tracking-widest">Loading details...</p>
+    </div>
+  );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse flex flex-col md:flex-row gap-10">
-            <div className="w-full md:w-1/2 aspect-square bg-gray-200 rounded-2xl" />
-            <div className="flex-1 space-y-4 py-2">
-              <div className="h-4 bg-gray-200 rounded w-1/4" />
-              <div className="h-7 bg-gray-200 rounded w-3/4" />
-              <div className="h-6 bg-gray-200 rounded w-1/4" />
-              <div className="h-20 bg-gray-200 rounded w-full" />
-              <div className="h-12 bg-gray-200 rounded w-full" />
-            </div>
-          </div>
-        </div>
+  if (!product) return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8">
+      <div className="bg-white p-12 rounded-[3rem] border border-gray-100 shadow-xl text-center">
+        <h2 className="text-2xl font-black text-gray-900 mb-4">Product not found</h2>
+        <button onClick={() => navigate("/")} className="btn-primary">Back to Store</button>
       </div>
-    );
-  }
-
-  if (error || !product) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-        <p className="text-rose-500 font-medium mb-4">{error || "Product not found"}</p>
-        <button
-          onClick={() => navigate("/")}
-          className="text-sm text-indigo-600 hover:underline"
-        >
-          Back to products
-        </button>
-      </div>
-    );
-  }
-
-  const inStock = product.stock > 0;
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="pb-20 animate-fade-in">
+      {/* Back Button */}
+      <button 
+        onClick={() => navigate("/")}
+        className="mb-8 flex items-center gap-2 text-sm font-black text-gray-400 hover:text-indigo-600 transition-colors group"
+      >
+        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+        BACK TO COLLECTION
+      </button>
 
-        {/* Back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
-        >
-          <ArrowLeft size={15} />
-          Back
-        </button>
-
-        <div className="flex flex-col md:flex-row gap-10">
-
-          {/* Image gallery */}
-          <div className="w-full md:w-1/2">
-            <div className="relative bg-white border border-gray-100 rounded-2xl overflow-hidden aspect-square shadow-sm">
-              <img
-                src={images[activeImage]}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-              {images.length > 1 && (
-                <>
-                  <button
-                    onClick={() => setActiveImage((prev) => (prev - 1 + images.length) % images.length)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow rounded-full p-1.5 transition"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <button
-                    onClick={() => setActiveImage((prev) => (prev + 1) % images.length)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow rounded-full p-1.5 transition"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Thumbnails */}
-            {images.length > 1 && (
-              <div className="flex gap-2 mt-3">
-                {images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveImage(i)}
-                    className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                      i === activeImage
-                        ? "border-indigo-500"
-                        : "border-transparent hover:border-gray-300"
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24">
+        {/* Gallery */}
+        <div className="space-y-6">
+          <div className="aspect-square bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl shadow-indigo-100/50 group">
+            <img 
+              src={product.images?.[activeImg] || "/placeholder.jpg"} 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              alt={product.name}
+            />
           </div>
-
-          {/* Product info */}
-          <div className="flex-1">
-            <span className="text-xs font-semibold text-indigo-600 uppercase tracking-widest capitalize">
-              {product.category}
-            </span>
-            <h1 className="text-2xl font-bold text-gray-900 mt-1 mb-3 leading-tight">
-              {product.name}
-            </h1>
-
-            <div className="flex items-center gap-3 mb-5">
-              <span className="text-3xl font-bold text-gray-900">
-                ₹{product.price.toLocaleString("en-IN")}
-              </span>
-            </div>
-
-            {/* Stock status */}
-            <div className="flex items-center gap-2 mb-5">
-              {inStock ? (
-                <>
-                  <CheckCircle size={15} className="text-emerald-500" />
-                  <span className="text-sm text-emerald-600 font-medium">
-                    {product.stock <= 5 ? `Only ${product.stock} left` : "In stock"}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle size={15} className="text-rose-400" />
-                  <span className="text-sm text-rose-500 font-medium">Out of stock</span>
-                </>
-              )}
-            </div>
-
-            <p className="text-sm text-gray-600 leading-relaxed mb-8">
-              {product.description}
-            </p>
-
-            {/* Quantity + Add to Cart */}
-            {inStock && (
-              <div className="flex items-center gap-3 mb-4">
-                {/* Quantity selector */}
-                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="px-3 py-2.5 text-gray-600 hover:bg-gray-50 transition-colors text-lg leading-none"
-                  >
-                    −
-                  </button>
-                  <span className="px-4 py-2.5 text-sm font-semibold text-gray-900 min-w-[40px] text-center">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() =>
-                      setQuantity((q) => Math.min(product.stock, q + 1))
-                    }
-                    className="px-3 py-2.5 text-gray-600 hover:bg-gray-50 transition-colors text-lg leading-none"
-                  >
-                    +
-                  </button>
-                </div>
-
-                {/* Add to cart button */}
+          {product.images?.length > 1 && (
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              {product.images.map((img, i) => (
                 <button
-                  onClick={handleAddToCart}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-medium text-sm transition-all ${
-                    added
-                      ? "bg-emerald-500 text-white"
-                      : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  key={i}
+                  onClick={() => setActiveImg(i)}
+                  className={`w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all shrink-0 ${
+                    activeImg === i ? "border-indigo-600 scale-95" : "border-transparent hover:border-gray-200"
                   }`}
                 >
-                  {added ? (
-                    <>
-                      <CheckCircle size={16} />
-                      Added to cart
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart size={16} />
-                      Add to cart
-                    </>
-                  )}
+                  <img src={img} className="w-full h-full object-cover" alt="" />
                 </button>
-              </div>
-            )}
-
-            {/* Go to cart */}
-            {added && (
-              <Link
-                to="/cart"
-                className="block text-center text-sm text-indigo-600 hover:underline mt-2"
-              >
-                View cart →
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* Related products */}
-        {related.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-lg font-bold text-gray-900 mb-5">
-              You might also like
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {related.map((p) => (
-                <ProductCard key={p._id} product={p} />
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
+        {/* Details */}
+        <div className="flex flex-col justify-center text-left">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-6 w-fit border border-indigo-100">
+            <Star size={12} fill="currentColor" />
+            Top Rated Selection
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight tracking-tight">
+            {product.name}
+          </h1>
+          
+          <div className="flex items-center gap-6 mb-8">
+            <span className="text-3xl font-black text-indigo-600">₹{product.price}</span>
+            <div className="h-8 w-px bg-gray-100" />
+            <span className={`text-sm font-black uppercase tracking-widest ${product.stock > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+            </span>
+          </div>
+
+          <p className="text-lg text-gray-500 font-medium leading-relaxed mb-10">
+            {product.description}
+          </p>
+
+          <div className="space-y-8">
+            {/* Quantity */}
+            <div className="flex items-center gap-6">
+              <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Quantity</span>
+              <div className="flex items-center bg-gray-50 rounded-2xl p-1 border border-gray-100">
+                <button 
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="p-3 hover:bg-white hover:text-indigo-600 rounded-xl transition-all active:scale-90"
+                >
+                  <Minus size={18} />
+                </button>
+                <span className="w-12 text-center font-black text-gray-900">{quantity}</span>
+                <button 
+                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  className="p-3 hover:bg-white hover:text-indigo-600 rounded-xl transition-all active:scale-90"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={() => addItem(product, quantity)}
+              disabled={product.stock === 0}
+              className="w-full md:w-auto px-12 py-5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-200 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-3"
+            >
+              <ShoppingCart size={22} />
+              Add to Cart
+            </button>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="mt-16 grid grid-cols-3 gap-4 border-t border-gray-50 pt-10">
+            <div className="flex flex-col items-center text-center gap-2">
+              <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600"><Truck size={20} /></div>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Fast Delivery</span>
+            </div>
+            <div className="flex flex-col items-center text-center gap-2">
+              <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600"><ShieldCheck size={20} /></div>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Secure Checkout</span>
+            </div>
+            <div className="flex flex-col items-center text-center gap-2">
+              <div className="p-3 bg-amber-50 rounded-xl text-amber-600"><RotateCcw size={20} /></div>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Easy Returns</span>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Related Products */}
+      {related.length > 0 && (
+        <section className="border-t border-gray-100 pt-20">
+          <div className="flex items-end justify-between mb-12 text-left">
+            <div>
+              <h2 className="text-3xl font-black text-gray-900 mb-2">You Might Also Like</h2>
+              <p className="text-gray-500 font-medium text-sm">Similar items from the {product.category} collection</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {related.map(p => <ProductCard key={p._id} product={p} />)}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

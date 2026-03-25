@@ -1,46 +1,32 @@
-import { SlidersHorizontal } from "lucide-react";
+import { LayoutGrid, Check } from "lucide-react";
 
 const FilterSidebar = ({ categories, selected, onSelect }) => {
   return (
-    <aside className="w-full sm:w-56 shrink-0">
-      <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-
-        <div className="flex items-center gap-2 mb-4">
-          <SlidersHorizontal size={14} className="text-gray-500" />
-          <span className="text-sm font-semibold text-gray-700">Filter by category</span>
+    <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm text-left">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+          <LayoutGrid size={18} />
         </div>
-
-        <ul className="space-y-1">
-          <li>
-            <button
-              onClick={() => onSelect("")}
-              className={`w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${
-                selected === ""
-                  ? "bg-indigo-50 text-indigo-700 font-medium"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              All products
-            </button>
-          </li>
-          {categories.map((cat) => (
-            <li key={cat}>
-              <button
-                onClick={() => onSelect(cat)}
-                className={`w-full text-left text-sm px-3 py-2 rounded-lg transition-colors capitalize ${
-                  selected === cat
-                    ? "bg-indigo-50 text-indigo-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                {cat}
-              </button>
-            </li>
-          ))}
-        </ul>
-
+        <h3 className="text-lg font-black text-gray-900 tracking-tight">Categories</h3>
       </div>
-    </aside>
+      
+      <div className="space-y-2">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => onSelect(cat)}
+            className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-black transition-all duration-300 group ${
+              selected === cat
+                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100 translate-x-1"
+                : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+            }`}
+          >
+            <span className="capitalize">{cat}</span>
+            {selected === cat && <Check size={14} className="animate-in zoom-in duration-300" />}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 };
 

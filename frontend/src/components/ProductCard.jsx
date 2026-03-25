@@ -1,66 +1,81 @@
 import { Link } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Tag, Star } from "lucide-react";
 import { useCart } from "../context/CartContext";
 
 const ProductCard = ({ product }) => {
   const { addItem } = useCart();
 
-  const handleAddToCart = (e) => {
-    e.preventDefault();
-    addItem(product, 1);
-  };
-
   return (
-    <Link
-      to={`/product/${product._id}`}
-      className="group bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col"
-    >
-      {/* Image */}
-      <div className="relative overflow-hidden bg-gray-50 aspect-square">
+    <div className="group bg-white rounded-[2rem] border border-gray-100 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-100 hover:-translate-y-2 flex flex-col h-full relative">
+      {/* Badge */}
+      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+        <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-indigo-600 shadow-sm flex items-center gap-1.5 border border-indigo-50">
+          <Tag size={10} />
+          {product.category}
+        </div>
+      </div>
+
+      {/* Rating (Static/Sample) */}
+      <div className="absolute top-4 right-4 z-10">
+        <div className="bg-amber-400 text-white px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 shadow-md shadow-amber-200">
+          <Star size={10} fill="currentColor" />
+          4.5
+        </div>
+      </div>
+
+      {/* Image Container */}
+      <Link 
+        to={`/product/${product._id}`} 
+        className="aspect-square overflow-hidden bg-gray-50 relative block"
+      >
         <img
           src={product.images?.[0] || "/placeholder.jpg"}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        {product.stock === 0 && (
-          <span className="absolute top-2 left-2 bg-gray-800 text-white text-xs font-medium px-2 py-1 rounded-full">
-            Out of stock
-          </span>
-        )}
-        {product.stock > 0 && product.stock <= 5 && (
-          <span className="absolute top-2 left-2 bg-amber-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-            Only {product.stock} left
-          </span>
-        )}
-      </div>
+        {/* Overlay on hover */}
+        <div className="absolute inset-0 bg-indigo-900/0 group-hover:bg-indigo-900/10 transition-colors duration-300" />
+      </Link>
 
-      {/* Info */}
-      <div className="p-4 flex flex-col flex-1">
-        <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide mb-1 capitalize">
-          {product.category}
-        </span>
-        <h3 className="text-sm font-semibold text-gray-900 leading-snug mb-2 line-clamp-2">
-          {product.name}
-        </h3>
-        <p className="text-xs text-gray-500 line-clamp-2 mb-4 flex-1">
-          {product.description}
-        </p>
+      {/* Content */}
+      <div className="p-6 flex flex-col flex-1">
+        <Link 
+          to={`/product/${product._id}`}
+          className="block"
+        >
+          <h3 className="text-gray-900 font-bold text-lg mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+            {product.name}
+          </h3>
+          <p className="text-gray-500 text-xs line-clamp-2 mb-4 h-8 leading-relaxed">
+            {product.description}
+          </p>
+        </Link>
 
-        <div className="flex items-center justify-between mt-auto">
-          <span className="text-base font-bold text-gray-900">
-            ₹{product.price.toLocaleString("en-IN")}
-          </span>
+        <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Price</span>
+            <span className="text-xl font-black text-gray-900">₹{product.price}</span>
+          </div>
+
           <button
-            onClick={handleAddToCart}
-            disabled={product.stock === 0}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+            onClick={() => addItem(product, 1)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-2xl transition-all duration-300 shadow-lg shadow-indigo-100 hover:shadow-indigo-200 active:scale-90 group/btn"
+            title="Add to Cart"
           >
-            <ShoppingCart size={13} />
-            Add
+            <ShoppingCart size={20} className="group-hover/btn:scale-110 transition-transform" />
           </button>
         </div>
       </div>
-    </Link>
+
+      {/* Stock indicator */}
+      {product.stock < 5 && (
+        <div className="absolute top-1/2 left-0 w-full text-center pointer-events-none">
+          <span className="bg-rose-500/90 backdrop-blur-sm text-white text-[10px] font-black px-4 py-1 rounded-full shadow-lg -rotate-12 inline-block">
+            LOW STOCK
+          </span>
+        </div>
+      )}
+    </div>
   );
 };
 
