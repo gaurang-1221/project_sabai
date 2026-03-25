@@ -14,9 +14,12 @@ const seed = async () => {
   if (!adminEmail || !adminPassword) {
     console.warn("⚠️  Skipping admin creation: ADMIN_EMAIL or ADMIN_PASSWORD not found in environment variables.");
   } else {
-    const existing = await User.findOne({ email: adminEmail });
-    if (existing) {
-      console.log(`ℹ️  Admin already exists: ${adminEmail}`);
+    let user = await User.findOne({ email: adminEmail });
+    if (user) {
+      console.log(`ℹ️  Admin already exists: ${adminEmail}. Updating password...`);
+      user.password = adminPassword; // Pre-save hook will hash it
+      await user.save();
+      console.log(`✅ Admin password updated successfully.`);
     } else {
       await User.create({
         email: adminEmail,
