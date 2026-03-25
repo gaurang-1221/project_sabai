@@ -19,12 +19,14 @@ const seed = async () => {
       console.log(`ℹ️  Admin already exists: ${adminEmail}. Updating password and role...`);
       user.password = adminPassword; // Pre-save hook will hash it
       user.role = "admin";
+      if (!user.fullName) user.fullName = "Administrator"; // Add default name if missing
       await user.save();
       console.log(`✅ Admin updated successfully.`);
     } else {
       await User.create({
         email: adminEmail,
         password: adminPassword,
+        fullName: "Administrator", // Set default name
         role: "admin",
       });
       console.log(`✅ Admin created: ${adminEmail}`);

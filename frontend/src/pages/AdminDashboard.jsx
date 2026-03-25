@@ -228,7 +228,18 @@ const AdminDashboard = () => {
           </button>
         </nav>
 
-        <div className="p-6 border-t border-gray-50">
+        <div className="p-6 border-t border-gray-50 bg-gray-50/30">
+          {user && (
+            <div className="flex items-center gap-3 px-4 py-3 mb-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-xs">
+                {user.fullName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "A"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-black text-gray-900 truncate">{user.fullName || user.email.split("@")[0]}</p>
+                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter truncate">{user.email}</p>
+              </div>
+            </div>
+          )}
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-6 py-4 rounded-[1.25rem] text-sm font-black text-rose-500 hover:bg-rose-50 transition-all duration-300 group"
@@ -243,11 +254,26 @@ const AdminDashboard = () => {
       <main className="flex-1 overflow-auto">
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-10">
           <div className="px-10 py-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-black text-gray-900 capitalize tracking-tight">
-                {activeTab}
-              </h2>
-              <p className="text-xs font-medium text-gray-500 mt-0.5">Manage your store's {activeTab} effortlessly</p>
+            <div className="flex items-center gap-8">
+              <div>
+                <h2 className="text-2xl font-black text-gray-900 capitalize tracking-tight">
+                  {activeTab}
+                </h2>
+                <p className="text-xs font-medium text-gray-500 mt-0.5">Manage your store's {activeTab} effortlessly</p>
+              </div>
+
+              {/* Admin Profile Info */}
+              {user && (
+                <div className="hidden lg:flex items-center gap-4 pl-8 border-l border-gray-100">
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-sm border border-indigo-100 shadow-sm">
+                    {user.fullName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "A"}
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-gray-900 leading-tight">{user.fullName || user.email.split("@")[0]}</p>
+                    <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Active Session</p>
+                  </div>
+                </div>
+              )}
             </div>
             
             {activeTab === "products" && (

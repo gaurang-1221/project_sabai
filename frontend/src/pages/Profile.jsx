@@ -53,7 +53,7 @@ const Profile = () => {
               </div>
               <div className="mt-4 text-center sm:text-left">
                 <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-                  {user.fullName || "User"}
+                  {user.fullName || user.email.split("@")[0]}
                 </h1>
                 <p className="text-sm font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full inline-flex mt-2 items-center gap-1.5 shadow-sm">
                   <Shield size={14} />
@@ -118,7 +118,11 @@ const Profile = () => {
                     </div>
                   ) : (
                     <p className="font-medium text-gray-900 mt-1">
-                      {user.fullName || <span className="text-gray-400 italic">Not provided</span>}
+                      {user.fullName || (
+                        <span className="text-gray-400 italic">
+                          {user.email.split("@")[0]} (fallback)
+                        </span>
+                      )}
                     </p>
                   )}
                 </div>
