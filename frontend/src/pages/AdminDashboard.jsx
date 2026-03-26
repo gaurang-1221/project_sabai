@@ -88,8 +88,7 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate("/admin/login");
+    logout("/admin/login");
   };
 
   const handleCompleteOrder = async (orderId) => {

@@ -20,7 +20,6 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
   };
 
   const isActive = (path) => location.pathname === path;
