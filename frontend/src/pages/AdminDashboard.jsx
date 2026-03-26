@@ -15,6 +15,7 @@ import {
   Eye,
   CheckCircle,
   History,
+  Menu,
 } from "lucide-react";
 
 const rawAPI = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -22,6 +23,7 @@ const API = rawAPI.endsWith("/") ? rawAPI.slice(0, -1) : rawAPI;
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("products"); // 'products' | 'orders' | 'history'
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -213,9 +215,17 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex animate-fade-in">
+    <div className="min-h-screen bg-[#f8fafc] flex animate-fade-in relative overflow-x-hidden">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-40 lg:hidden" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-100 flex flex-col sticky top-0 h-screen shadow-sm">
+      <aside className={`fixed lg:sticky top-0 left-0 h-[100dvh] w-72 bg-white border-r border-gray-100 flex flex-col shadow-sm z-50 transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-200">
@@ -228,9 +238,9 @@ const AdminDashboard = () => {
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Management Console</p>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
+        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto min-h-0">
           <button
-            onClick={() => setActiveTab("products")}
+            onClick={() => { setActiveTab("products"); setIsSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-6 py-4 rounded-[1.25rem] text-sm font-black transition-all duration-300 ${
               activeTab === "products"
                 ? "bg-indigo-600 text-white shadow-xl shadow-indigo-100 translate-x-1"
@@ -241,7 +251,7 @@ const AdminDashboard = () => {
             Products
           </button>
           <button
-            onClick={() => setActiveTab("orders")}
+            onClick={() => { setActiveTab("orders"); setIsSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-6 py-4 rounded-[1.25rem] text-sm font-black transition-all duration-300 ${
               activeTab === "orders"
                 ? "bg-indigo-600 text-white shadow-xl shadow-indigo-100 translate-x-1"
@@ -252,7 +262,7 @@ const AdminDashboard = () => {
             Orders
           </button>
           <button
-            onClick={() => setActiveTab("history")}
+            onClick={() => { setActiveTab("history"); setIsSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-6 py-4 rounded-[1.25rem] text-sm font-black transition-all duration-300 ${
               activeTab === "history"
                 ? "bg-indigo-600 text-white shadow-xl shadow-indigo-100 translate-x-1"
@@ -287,15 +297,21 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-10">
-          <div className="px-10 py-6 flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <div>
-                <h2 className="text-2xl font-black text-gray-900 capitalize tracking-tight">
+      <main className="flex-1 overflow-auto w-full max-w-full min-w-0">
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-10 w-full">
+          <div className="px-4 lg:px-10 py-4 lg:py-6 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 lg:gap-8 min-w-0">
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-xl flex-shrink-0"
+              >
+                <Menu size={24} />
+              </button>
+              <div className="min-w-0">
+                <h2 className="text-xl lg:text-2xl font-black text-gray-900 capitalize tracking-tight truncate">
                   {activeTab}
                 </h2>
-                <p className="text-xs font-medium text-gray-500 mt-0.5">Manage your store's {activeTab} effortlessly</p>
+                <p className="hidden sm:block text-xs font-medium text-gray-500 mt-0.5 truncate">Manage your store's {activeTab} effortlessly</p>
               </div>
 
               {/* Admin Profile Info */}
@@ -319,26 +335,26 @@ const AdminDashboard = () => {
                   setForm({ name: "", description: "", price: "", category: "", stock: "", images: [], imageFiles: [] });
                   setShowModal(true);
                 }}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black px-6 py-3 rounded-2xl transition-all shadow-xl shadow-indigo-100 hover:shadow-indigo-200 active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black px-4 lg:px-6 py-2.5 lg:py-3 rounded-2xl transition-all shadow-xl shadow-indigo-100 hover:shadow-indigo-200 active:scale-[0.98] flex-shrink-0"
               >
                 <Plus size={20} />
-                New Product
+                <span className="hidden sm:inline">New Product</span>
               </button>
             )}
 
             {activeTab === "history" && (
               <button
                 onClick={handleClearHistory}
-                className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-black px-6 py-3 rounded-2xl transition-all shadow-xl shadow-rose-100 hover:shadow-rose-200 active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-black px-4 lg:px-6 py-2.5 lg:py-3 rounded-2xl transition-all shadow-xl shadow-rose-100 hover:shadow-rose-200 active:scale-[0.98] flex-shrink-0"
               >
                 <Trash2 size={20} />
-                Clear All History
+                <span className="hidden sm:inline">Clear History</span>
               </button>
             )}
           </div>
         </header>
 
-        <div className="p-10">
+        <div className="p-4 lg:p-10 w-full max-w-full">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32">
               <div className="relative">
@@ -412,7 +428,7 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                           <td className="px-8 py-5 text-right">
-                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => openEditModal(p)}
                                 className="p-2.5 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
@@ -455,7 +471,7 @@ const AdminDashboard = () => {
                             </span>
                           </td>
                           <td className="px-8 py-5 text-right">
-                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
                               {o.status !== 'complete' && (
                                 <button
                                   onClick={() => handleCompleteOrder(o._id)}
@@ -497,21 +513,21 @@ const AdminDashboard = () => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setShowModal(false)} />
-          <div className="relative bg-white w-full max-w-xl rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="px-10 py-8 border-b border-gray-50 flex items-center justify-between">
+          <div className="relative bg-white w-full max-w-xl max-h-[90vh] flex flex-col rounded-[2rem] lg:rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="px-6 lg:px-10 py-6 lg:py-8 border-b border-gray-50 flex items-center justify-between flex-shrink-0">
               <div>
-                <h3 className="text-2xl font-black text-gray-900 tracking-tight">
+                <h3 className="text-xl lg:text-2xl font-black text-gray-900 tracking-tight">
                   {editingProduct ? "Update Product" : "New Creation"}
                 </h3>
                 <p className="text-xs font-medium text-gray-500 mt-0.5">Fill in the details for your masterpiece</p>
               </div>
-              <button onClick={() => setShowModal(false)} className="p-3 text-gray-400 hover:text-gray-900 rounded-2xl hover:bg-gray-50 transition-colors">
+              <button type="button" onClick={() => setShowModal(false)} className="p-2 lg:p-3 text-gray-400 hover:text-gray-900 rounded-2xl hover:bg-gray-50 transition-colors">
                 <X size={24} />
               </button>
             </div>
-            <form onSubmit={handleSubmitProduct} className="p-10 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="col-span-2 space-y-2">
+            <form onSubmit={handleSubmitProduct} className="p-6 lg:p-10 space-y-6 overflow-y-auto w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="col-span-1 sm:col-span-2 space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Product Name</label>
                   <input
                     required
@@ -522,7 +538,7 @@ const AdminDashboard = () => {
                     placeholder="e.g. Premium Leather Bag"
                   />
                 </div>
-                <div className="col-span-2 space-y-2">
+                <div className="col-span-1 sm:col-span-2 space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Detailed Description</label>
                   <textarea
                     required
@@ -553,7 +569,7 @@ const AdminDashboard = () => {
                     className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
                   />
                 </div>
-                <div className="col-span-2 space-y-2">
+                <div className="col-span-1 sm:col-span-2 space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Category</label>
                   <div className="relative group">
                     <input
@@ -575,7 +591,7 @@ const AdminDashboard = () => {
                     * Type a new category name or select from the suggestions above.
                   </p>
                 </div>
-                <div className="col-span-2 space-y-3">
+                <div className="col-span-1 sm:col-span-2 space-y-3">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Product Images</label>
                   
                   {/* Image Previews & Existing Images */}
