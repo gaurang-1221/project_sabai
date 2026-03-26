@@ -169,10 +169,13 @@ const AdminDashboard = () => {
       formData.append("stock", form.stock);
 
       // Existing images to keep (if editing)
-      if (editingProduct && form.images) {
-        form.images.forEach((img) => {
-          formData.append("existingImages", img);
-        });
+      if (editingProduct) {
+        if (form.images && form.images.length > 0) {
+          form.images.forEach((img) => formData.append("existingImages", img));
+        } else {
+          // Explicitly empty so backend knows all were removed
+          formData.append("existingImages", "");
+        }
       }
 
       // New image files

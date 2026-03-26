@@ -63,15 +63,29 @@ router.put("/:id", protect, upload.array("images", 5), async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
     const { name, description, price, category, stock, existingImages } = req.body;
-    const kept = existingImages
-      ? Array.isArray(existingImages) ? existingImages : [existingImages]
+    const kept = existingImages !== undefined
+      ? Array.isArray(existingImages) 
+          ? existingImages 
+          : (existingImages === "" ? [] : [existingImages])
       : product.images;
+
+    // Remove unkept images from Cloudinary
+    const unkept = product.images.filter((img) => !kept.includes(img));
+    for (const url of unkept) {
+      try {
+        const parts = url.split("/");
+        const filename = parts[parts.length - 1].split(".")[0];
+        const folder = parts[parts.length - 2];
+        await cloudinary.uploader.destroy(`${folder}/${filename}`);
+      } catch (_) {}
+    }
+
     const newImages = req.files?.map((f) => f.path) || [];
     product.name        = name        ?? product.name;
     product.description = description ?? product.description;
-    product.price       = price       !== undefined ? Number(price)  : product.price;
+    product.price       = price       !== undefined ? Number(price) : product.price;
     product.category    = category    ? category.toLowerCase().trim() : product.category;
-    product.stock       = stock       !== undefined ? Number(stock)  : product.stock;
+    product.stock       = stock       !== undefined ? Number(stock) : product.stock;
     product.images      = [...kept, ...newImages];
     const updated = await product.save();
     res.json(updated);
